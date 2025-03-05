@@ -9,4 +9,14 @@ export class UserService {
     private readonly userRepository: UserRepository,
     private readonly fileUploadService: FileUploadService,
   ) {}
+
+  async me(userId: number) {
+    return this.userRepository.findById(userId, {
+      id: true,
+      name: true,
+      surname: true,
+      email: true,
+      avatarUrl: true,
+    });
+  }
 }
