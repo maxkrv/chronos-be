@@ -8,10 +8,11 @@ import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  const logger = app.get(Logger);
 
   app.enableCors();
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
-  app.useLogger(app.get(Logger));
+  app.useLogger(logger);
   app.useGlobalInterceptors(new LoggerErrorInterceptor());
 
   const config = new DocumentBuilder()
@@ -29,7 +30,7 @@ async function bootstrap() {
   const PORT = configService.get('PORT') as number;
 
   await app.listen(PORT).then(() => {
-    console.log(`Server running on port ${PORT}`);
+    logger.log(`Server is running on port ${PORT}`);
   });
 }
 bootstrap();

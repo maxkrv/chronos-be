@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import Redis from 'ioredis';
 import ActivationLink from 'src/emails/activation-link';
 import ResetPasswordLink from 'src/emails/reset-password';

@@ -21,6 +21,6 @@ model User {
   password   String @db.VarChar(100)
   avatarUrl  String? @map("avatar_url")
   isActive   Boolean @default(false) @map("is_active")
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
 }
