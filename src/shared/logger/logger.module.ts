@@ -8,6 +8,7 @@ import { LoggerModule as PinoLoggerModule } from 'nestjs-pino';
         customProps: () => ({
           context: 'HTTP',
         }),
+        autoLogging: true,
         level: process.env.NODE_ENV !== 'production' ? 'debug' : 'info',
         transport:
           process.env.NODE_ENV !== 'production'

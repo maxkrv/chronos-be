@@ -1,33 +1,29 @@
-import { ValidationPipe } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { Logger, LoggerErrorInterceptor } from 'nestjs-pino';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import { useContainer } from 'class-validator';
+import { Logger } from 'nestjs-pino';
+import { join } from 'path';
 
 import { AppModule } from './app.module';
+import { ApiConfigService } from './config/api-config.service';
+import { GLOBAL_PREFIX, Prefix } from './utils/prefix.enum';
+import { Swagger } from './utils/setup-swagger';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const logger = app.get(Logger);
-
-  app.enableCors();
-  app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
+  const cs = app.get(ApiConfigService);
+  const PORT = cs.getPort();
+  useContainer(app.select(AppModule), { fallbackOnErrors: true });
   app.useLogger(logger);
-  app.useGlobalInterceptors(new LoggerErrorInterceptor());
+  app.setGlobalPrefix(GLOBAL_PREFIX, { exclude: ['/'] });
+  app.useStaticAssets(join(process.cwd(), 'assets'), {
+    prefix: `/${GLOBAL_PREFIX}/${Prefix.ASSETS}`,
+  });
 
-  const config = new DocumentBuilder()
-    .setTitle('Chronos API')
-    .setDescription('Chronos API')
-    .setVersion('1.0')
-    .addTag('web-commerce')
-    .addBearerAuth()
-    .build();
-  const documentFactory = () => SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, documentFactory);
-
-  const configService = app.get(ConfigService);
-
-  const PORT = configService.get('PORT') as number;
+  if (cs.isDevelopment()) {
+    Swagger.setup(app);
+  }
 
   await app.listen(PORT).then(() => {
     logger.log(`Server is running on port ${PORT}`);

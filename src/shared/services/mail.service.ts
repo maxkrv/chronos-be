@@ -1,8 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { render } from '@react-email/render';
 import * as nodemailer from 'nodemailer';
+import { createTransport } from 'nodemailer';
 import { ReactElement, ReactNode } from 'react';
+
+import { ApiConfigService } from '../../config/api-config.service';
 
 interface MailOptions {
   to: string;
@@ -14,19 +16,26 @@ interface MailOptions {
 export class MailService {
   private readonly transporter: nodemailer.Transporter | null = null;
 
-  constructor(private readonly configService: ConfigService) {
-    this.transporter = nodemailer.createTransport(
+  constructor(private readonly cs: ApiConfigService) {
+    const mail = this.cs.getMail();
+    this.transporter = createTransport(
       {
-        host: configService.get('EMAIL_HOST'),
-        port: configService.get('EMAIL_PORT'),
-        secure: true,
+        tls: {
+          rejectUnauthorized: false,
+        },
+        host: mail.host,
+        port: mail.port,
+        secure: mail.secure,
         auth: {
-          user: configService.get('EMAIL_USER'),
-          pass: configService.get('EMAIL_PASSWORD'),
+          user: mail.auth.user,
+          pass: mail.auth.pass,
         },
       },
       {
-        from: configService.get('EMAIL_FROM'),
+        from: {
+          name: mail.from.name,
+          address: mail.from.address,
+        },
       },
     );
   }

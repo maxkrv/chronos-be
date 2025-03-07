@@ -4,15 +4,14 @@ import {
   ForbiddenException,
   Injectable,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import bcrypt from 'bcryptjs';
 import Redis from 'ioredis';
 import ActivationLink from 'src/emails/activation-link';
 import ResetPasswordLink from 'src/emails/reset-password';
-import { SEVEN_DAYS } from 'src/shared/constants/constants';
 import { MailService } from 'src/shared/services/mail.service';
 
+import { ApiConfigService } from '../../config/api-config.service';
 import { UserRepository } from '../user/user.repository';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
@@ -27,7 +26,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly redisService: RedisService,
     private readonly userRepository: UserRepository,
-    private readonly configService: ConfigService,
+    private readonly configService: ApiConfigService,
     private readonly mailService: MailService,
   ) {
     this.redis = this.redisService.getOrThrow();
@@ -62,7 +61,6 @@ export class AuthService {
     }
 
     const hash: string = await bcrypt.hash(dto.password, 10);
-
     const user = await this.userRepository.create({
       ...dto,
       password: hash,
@@ -114,7 +112,7 @@ export class AuthService {
 
   async activate(token: string, userId: number) {
     const { sub } = await this.jwtService.verifyAsync<{ sub: number }>(token, {
-      secret: this.configService.get('JWT_ACTIVE_SECRET'),
+      secret: this.configService.getApp().jwt.accessToken.secret,
     });
 
     if (sub !== userId) {
@@ -144,7 +142,8 @@ export class AuthService {
     const token = await this.jwtService.signAsync(
       { sub: user.id },
       {
-        secret: this.configService.get('JWT_RESET_SECRET'),
+        secret: this.configService.getAuth().mail.jwt.resetPass.secret,
+        expiresIn: this.configService.getAuth().mail.jwt.resetPass.time,
       },
     );
 
@@ -152,7 +151,7 @@ export class AuthService {
       to: email,
       subject: 'Reset password',
       template: await ResetPasswordLink({
-        link: `${this.configService.get('CLIENT_URL')}/auth/reset-password/${token}`,
+        link: `${this.configService.getApp().clientUrl}/auth/reset-password/${token}`,
         name: user.name,
       }),
     });
@@ -164,7 +163,7 @@ export class AuthService {
 
   async resetPassword({ token, password }: ResetPasswordDto) {
     const { sub } = await this.jwtService.verifyAsync<{ sub: number }>(token, {
-      secret: this.configService.get('JWT_RESET_SECRET'),
+      secret: this.configService.getAuth().mail.jwt.resetPass.secret,
     });
 
     const hash: string = await bcrypt.hash(password, 10);
@@ -187,12 +186,12 @@ export class AuthService {
   private async generateTokenPair(payload: JwtPayload) {
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(payload, {
-        expiresIn: '15m',
-        secret: this.configService.get('JWT_SECRET'),
+        expiresIn: this.configService.getApp().jwt.accessToken.time,
+        secret: this.configService.getApp().jwt.accessToken.secret,
       }),
       this.jwtService.signAsync(payload, {
-        expiresIn: '7d',
-        secret: this.configService.get('JWT_REFRESH_SECRET'),
+        expiresIn: this.configService.getApp().jwt.refreshToken.time,
+        secret: this.configService.getApp().jwt.refreshToken.secret,
       }),
     ]);
 
@@ -200,21 +199,40 @@ export class AuthService {
       `${payload.sub}:${refreshToken}`,
       JSON.stringify(payload),
       'EX',
-      SEVEN_DAYS,
+      this.convertJwtExpToSeconds(
+        this.configService.getApp().jwt.refreshToken.time,
+      ),
     );
-
     return { accessToken, refreshToken };
+  }
+
+  private convertJwtExpToSeconds(time: string) {
+    const [value, unit] = time.split(/(?<=\d)(?=[a-zA-Z])/);
+
+    switch (unit) {
+      case 's':
+        return +value;
+      case 'm':
+        return +value * 60;
+      case 'h':
+        return +value * 3600;
+      case 'd':
+        return +value * 86400;
+      default:
+        throw new Error('Invalid time unit');
+    }
   }
 
   private async generateActivationLink(userId: number): Promise<string> {
     const token = await this.jwtService.signAsync(
       { sub: userId },
       {
-        secret: this.configService.get('JWT_ACTIVE_SECRET'),
+        secret: this.configService.getAuth().mail.jwt.verification.secret,
+        expiresIn: this.configService.getAuth().mail.jwt.verification.time,
       },
     );
 
-    return `${this.configService.get('CLIENT_URL')}/auth/activate/${token}`;
+    return `${this.configService.getApp().clientUrl}/auth/activate/${token}`;
   }
 
   private async findRefreshToken(userId: number, token: string) {
