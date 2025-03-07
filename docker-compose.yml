@@ -12,10 +12,12 @@ services:
   redis:
     image: redis:latest
     container_name: redis_container_chronos
+    env_file:
+      - .env
     environment:
-      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - REDIS_PASSWORD=${REDIS_ROOT_PASS}
       - REDIS_USER=${REDIS_USER}
-      - REDIS_USER_PASSWORD=${REDIS_USER_PASSWORD}
+      - REDIS_USER_PASSWORD=${REDIS_PASS}
     ports:
       - '6379:6379'
     volumes:
@@ -32,15 +34,15 @@ services:
       sh -c '
         mkdir -p /usr/local/etc/redis &&
         echo "bind 0.0.0.0" > /usr/local/etc/redis/redis.conf &&
-        echo "requirepass $REDIS_PASSWORD" >> /usr/local/etc/redis/redis.conf &&
+        echo "requirepass $REDIS_ROOT_PASS" >> /usr/local/etc/redis/redis.conf &&
         echo "appendonly yes" >> /usr/local/etc/redis/redis.conf &&
         echo "appendfsync everysec" >> /usr/local/etc/redis/redis.conf &&
         echo "user default on nopass ~* +@all" > /usr/local/etc/redis/users.acl &&
-        echo "user $REDIS_USER on >$REDIS_USER_PASSWORD ~* +@all" >> /usr/local/etc/redis/users.acl &&
+        echo "user $REDIS_USER on >$REDIS_PASS ~* +@all" >> /usr/local/etc/redis/users.acl &&
         redis-server /usr/local/etc/redis/redis.conf --aclfile /usr/local/etc/redis/users.acl
       '
     healthcheck:
-      test: ['CMD', 'redis-cli', '-a', '$REDIS_PASSWORD', 'ping']
+      test: ['CMD', 'redis-cli', '-a', '$REDIS_PASS', 'ping']
       interval: 30s
       timeout: 10s
       retries: 5

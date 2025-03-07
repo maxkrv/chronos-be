@@ -1,62 +1,54 @@
 import { RedisModule } from '@liaoliaots/nestjs-redis';
-import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { APP_GUARD } from '@nestjs/core';
-import * as Joi from 'joi';
+import {
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+  ValidationPipe,
+} from '@nestjs/common';
+import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
+import { ScheduleModule } from '@nestjs/schedule';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import cors from 'cors';
+import helmet from 'helmet';
+import { LoggerErrorInterceptor } from 'nestjs-pino';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { ApiConfigModule } from './config/api-config.module';
+import { ApiConfigService } from './config/api-config.service';
+import { DatabaseService } from './db/database.service';
+import { DbModule } from './db/db.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { GlobalExceptionFilter } from './shared/global-exception.filter';
 import { AccessTokenGuard } from './shared/guards/access-token.guard';
 import { LoggerModule } from './shared/logger/logger.module';
-import { DatabaseService } from './shared/services/database.service';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({
-      isGlobal: true,
-      envFilePath: '.env',
-      validationSchema: Joi.object({
-        PORT: Joi.number().port().required(),
-        DATABASE_URL: Joi.string().uri().required(),
-        CLIENT_URL: Joi.string().uri().required(),
-        // JWT
-        JWT_SECRET: Joi.string().required(),
-        JWT_REFRESH_SECRET: Joi.string().required(),
-        JWT_ACTIVE_SECRET: Joi.string().required(),
-        JWT_RESET_SECRET: Joi.string().required(),
-        // S3
-        AWS_ACCESS_KEY: Joi.string().required(),
-        AWS_SECRET_KEY: Joi.string().required(),
-        AWS_REGION: Joi.string().required(),
-        AWS_BUCKET: Joi.string().required(),
-        // REDIS
-        REDIS_HOST: Joi.string().required(),
-        REDIS_PORT: Joi.number().required(),
-        REDIS_PASSWORD: Joi.string().required(),
-        REDIS_USER: Joi.string().required(),
-        REDIS_USER_PASSWORD: Joi.string().required(),
+    ApiConfigModule,
+    LoggerModule,
+    AuthModule,
+    DbModule,
+    ScheduleModule.forRoot(),
+    ThrottlerModule.forRootAsync({
+      imports: [ApiConfigModule],
+      inject: [ApiConfigService],
+      useFactory: (cs: ApiConfigService) => ({
+        throttlers: [cs.getApp().throttle],
       }),
     }),
-    LoggerModule,
     RedisModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
+      imports: [ApiConfigModule],
+      inject: [ApiConfigService],
       // typescript is ass
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-expect-error
-      useFactory: (configService: ConfigService) => {
+      useFactory: (cs: ApiConfigService) => {
         return {
-          config: {
-            host: configService.get('REDIS_HOST'),
-            port: configService.get('REDIS_PORT'),
-            password: configService.get('REDIS_USER_PASSWORD'),
-            username: configService.get('REDIS_USER'),
-          },
+          config: cs.getRedis(),
         };
       },
     }),
-    AuthModule,
   ],
   controllers: [AppController],
   providers: [
@@ -66,6 +58,28 @@ import { DatabaseService } from './shared/services/database.service';
       provide: APP_GUARD,
       useClass: AccessTokenGuard,
     },
+    {
+      provide: APP_PIPE,
+      useFactory: () =>
+        new ValidationPipe({
+          transform: true,
+          validateCustomDecorators: true,
+          whitelist: true,
+        }),
+    },
+    {
+      provide: APP_FILTER,
+      useClass: GlobalExceptionFilter,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+    { provide: APP_INTERCEPTOR, useClass: LoggerErrorInterceptor },
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(cors({ credentials: true }), helmet()).forRoutes('*');
+  }
+}

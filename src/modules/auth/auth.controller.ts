@@ -12,6 +12,7 @@ import { Public } from 'src/shared/decorators/public.decorator';
 import { SkipAccessTokenCheck } from 'src/shared/decorators/skip-access-token-check.decorator';
 import { EmailDto } from 'src/shared/dto/email.dto';
 import { RefreshTokenGuard } from 'src/shared/guards/refresh-token.guard';
+import { Prefix } from 'src/utils/prefix.enum';
 
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
@@ -19,7 +20,7 @@ import { RegisterDto } from './dto/register.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { JwtPayload, JwtPayloadWithRefresh } from './interface/jwt.interface';
 
-@Controller('auth')
+@Controller(Prefix.AUTH)
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 

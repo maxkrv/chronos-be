@@ -4,23 +4,25 @@ import {
   S3Client,
 } from '@aws-sdk/client-s3';
 import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { nanoid } from 'nanoid';
+
+import { ApiConfigService } from '../../config/api-config.service';
 
 @Injectable()
 export class FileUploadService {
   private readonly s3: S3Client;
   private readonly bucketName: string;
 
-  constructor(private readonly configService: ConfigService) {
+  constructor(private readonly cs: ApiConfigService) {
+    const aws = cs.getAWS();
     this.s3 = new S3Client({
+      region: aws.s3.region,
       credentials: {
-        accessKeyId: configService.get('AWS_ACCESS_KEY') as string,
-        secretAccessKey: configService.get('AWS_SECRET_KEY') as string,
+        accessKeyId: aws.s3.keyId,
+        secretAccessKey: aws.s3.secretKey,
       },
-      region: configService.get('AWS_REGION'),
     });
-    this.bucketName = configService.get('AWS_BUCKET') as string;
+    this.bucketName = cs.getAWS().s3.bucketName;
   }
 
   async uploadFile(file: Express.Multer.File) {
@@ -36,7 +38,7 @@ export class FileUploadService {
 
     return {
       key: params.Key,
-      location: `https://${this.bucketName}.s3.${this.configService.get('AWS_REGION')}.amazonaws.com/${params.Key}`,
+      location: `https://${this.bucketName}.s3.${this.cs.getAWS().s3.region}.amazonaws.com/${params.Key}`,
     };
   }
 
