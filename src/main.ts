@@ -15,6 +15,7 @@ async function bootstrap() {
   const cs = app.get(ApiConfigService);
   const PORT = cs.getPort();
   useContainer(app.select(AppModule), { fallbackOnErrors: true });
+  app.enableCors();
   app.useLogger(logger);
   app.setGlobalPrefix(GLOBAL_PREFIX, { exclude: ['/'] });
   app.useStaticAssets(join(process.cwd(), 'assets'), {

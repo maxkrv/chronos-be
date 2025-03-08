@@ -111,9 +111,13 @@ export class AuthService {
   }
 
   async activate(token: string, userId: number) {
-    const { sub } = await this.jwtService.verifyAsync<{ sub: number }>(token, {
-      secret: this.configService.getApp().jwt.accessToken.secret,
-    });
+    const { sub } = await this.jwtService
+      .verifyAsync<{ sub: number }>(token, {
+        secret: this.configService.getAuth().mail.jwt.verification.secret,
+      })
+      .catch(() => {
+        throw new BadRequestException('Invalid token');
+      });
 
     if (sub !== userId) {
       throw new BadRequestException();
@@ -143,7 +147,6 @@ export class AuthService {
       { sub: user.id },
       {
         secret: this.configService.getAuth().mail.jwt.resetPass.secret,
-        expiresIn: this.configService.getAuth().mail.jwt.resetPass.time,
       },
     );
 
@@ -228,7 +231,6 @@ export class AuthService {
       { sub: userId },
       {
         secret: this.configService.getAuth().mail.jwt.verification.secret,
-        expiresIn: this.configService.getAuth().mail.jwt.verification.time,
       },
     );
 

@@ -17,6 +17,7 @@ export class UserService {
       surname: true,
       email: true,
       avatarUrl: true,
+      isActive: true,
     });
   }
 }
