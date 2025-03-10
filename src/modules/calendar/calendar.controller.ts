@@ -9,12 +9,15 @@ import {
   Query,
 } from '@nestjs/common';
 import { ApiBearerAuth } from '@nestjs/swagger';
+import { Calendar } from '@prisma/client';
 import { GetCurrentUser } from 'src/shared/decorators/get-current-user.decorator';
+import { Paginated } from 'src/shared/pagination';
 import { Prefix } from 'src/utils/prefix.enum';
 
 import { JwtPayload } from '../auth/interface/jwt.interface';
 import { CalendarService } from './calendar.service';
 import { CreateCalendarDto } from './dto/create-calendar.dto';
+import { GetPublicCalendarsDto } from './dto/get-public-calendars.dto';
 import { UpdateCalendarDto } from './dto/update-calendar.dto';
 
 @Controller(Prefix.CALENDARS)
@@ -22,21 +25,23 @@ export class CalendarController {
   constructor(private readonly calendarService: CalendarService) {}
 
   @ApiBearerAuth()
-  @Get('search')
-  async getCalendarsByName(@Query('name') name: string) {
-    return this.calendarService.getCalendarsByName(name);
+  @Get('public')
+  async getPublicCalendars(
+    @Query() query: GetPublicCalendarsDto,
+  ): Promise<Paginated<Calendar>> {
+    return this.calendarService.findPublic(query);
   }
 
   @ApiBearerAuth()
-  @Get('public')
-  async getPublicCalendars() {
-    return this.calendarService.getPublicCalendars();
+  @Get('participating')
+  async getParticipatingCalendars(@GetCurrentUser() { sub }: JwtPayload) {
+    return this.calendarService.findParticipating(sub);
   }
 
   @ApiBearerAuth()
   @Get('my')
   async getMyCalendars(@GetCurrentUser() { sub }: JwtPayload) {
-    return this.calendarService.getMyCalendars(sub);
+    return this.calendarService.findByOwnerId(sub);
   }
 
   @ApiBearerAuth()
@@ -45,13 +50,7 @@ export class CalendarController {
     @Param('id') id: number,
     @GetCurrentUser() { sub }: JwtPayload,
   ) {
-    return this.calendarService.getCalendarById(id, sub);
-  }
-
-  @ApiBearerAuth()
-  @Get()
-  async getAllCalendars() {
-    return this.calendarService.getAllCalendars();
+    return this.calendarService.findById(id, sub);
   }
 
   @ApiBearerAuth()
@@ -60,7 +59,7 @@ export class CalendarController {
     @Body() dto: CreateCalendarDto,
     @GetCurrentUser() { sub }: JwtPayload,
   ) {
-    return this.calendarService.createCalendar(dto, sub);
+    return this.calendarService.create(dto, sub);
   }
 
   @ApiBearerAuth()
@@ -70,7 +69,7 @@ export class CalendarController {
     @Body() dto: UpdateCalendarDto,
     @GetCurrentUser() { sub }: JwtPayload,
   ) {
-    return this.calendarService.updateCalendar(id, sub, dto);
+    return this.calendarService.update(id, sub, dto);
   }
 
   @ApiBearerAuth()
@@ -79,6 +78,6 @@ export class CalendarController {
     @Param('id') id: number,
     @GetCurrentUser() { sub }: JwtPayload,
   ) {
-    return this.calendarService.deleteCalendar(id, sub);
+    return this.calendarService.delete(id, sub);
   }
 }
