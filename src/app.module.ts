@@ -19,6 +19,7 @@ import { ApiConfigService } from './config/api-config.service';
 import { DatabaseService } from './db/database.service';
 import { DbModule } from './db/db.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { CalendarModule } from './modules/calendar/calendar.module';
 import { GlobalExceptionFilter } from './shared/global-exception.filter';
 import { AccessTokenGuard } from './shared/guards/access-token.guard';
 import { LoggerModule } from './shared/logger/logger.module';
@@ -28,6 +29,7 @@ import { LoggerModule } from './shared/logger/logger.module';
     ApiConfigModule,
     LoggerModule,
     AuthModule,
+    CalendarModule,
     DbModule,
     ScheduleModule.forRoot(),
     ThrottlerModule.forRootAsync({
