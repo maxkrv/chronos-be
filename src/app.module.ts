@@ -20,6 +20,7 @@ import { DatabaseService } from './db/database.service';
 import { DbModule } from './db/db.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { CalendarModule } from './modules/calendar/calendar.module';
+import { CalendarInvitationsModule } from './modules/calendar-invitations/calendar-invitations.module';
 import { GlobalExceptionFilter } from './shared/global-exception.filter';
 import { AccessTokenGuard } from './shared/guards/access-token.guard';
 import { LoggerModule } from './shared/logger/logger.module';
@@ -30,6 +31,7 @@ import { LoggerModule } from './shared/logger/logger.module';
     LoggerModule,
     AuthModule,
     CalendarModule,
+    CalendarInvitationsModule,
     DbModule,
     ScheduleModule.forRoot(),
     ThrottlerModule.forRootAsync({

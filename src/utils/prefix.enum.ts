@@ -4,6 +4,7 @@ export enum Prefix {
   AUTH = 'auth',
   USERS = 'users',
   CALENDARS = 'calendars',
+  CALENDAR_INVITATIONS = 'calendar-invitations',
   ASSETS = 'assets',
 }
 export const GLOBAL_PREFIX = 'api';
