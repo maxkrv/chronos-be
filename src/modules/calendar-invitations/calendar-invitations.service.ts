@@ -19,6 +19,18 @@ export class CalendarInvitationsService {
     private readonly mailService: MailService,
   ) {}
 
+  async getMyInvitatios(userId: number) {
+    return this.databaseService.calendarInvitation.findMany({
+      where: {
+        userId,
+        status: InvitationStatus.PENDING,
+      },
+      include: {
+        calendar: true,
+      },
+    });
+  }
+
   async getInvitations(calendarId: number, ownerId: number) {
     const calendar = await this.databaseService.calendar.findUnique({
       where: { id: calendarId },

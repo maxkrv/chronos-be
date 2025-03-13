@@ -14,6 +14,12 @@ export class CalendarInvitationsController {
   ) {}
 
   @ApiBearerAuth()
+  @Get('my')
+  async getUserInvitations(@GetCurrentUser() { sub }: JwtPayload) {
+    return this.calendarInvitationsService.getMyInvitatios(sub);
+  }
+
+  @ApiBearerAuth()
   @Get('calendar/:calendarId/invitations')
   async getCalendarInvitations(
     @Param('calendarId') calendarId: number,
@@ -23,7 +29,7 @@ export class CalendarInvitationsController {
   }
 
   @ApiBearerAuth()
-  @Post('create')
+  @Post()
   async createCalendarInvitation(
     @Body() dto: CreateCalendarInvitationDto,
     @GetCurrentUser() { sub }: JwtPayload,
