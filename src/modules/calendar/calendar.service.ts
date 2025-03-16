@@ -3,7 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Calendar, Prisma, Visibility } from '@prisma/client';
+import { Calendar, Prisma, UserRole, Visibility } from '@prisma/client';
 import { DatabaseService } from 'src/db/database.service';
 import { Paginated, Paginator } from 'src/shared/pagination';
 
@@ -75,16 +75,29 @@ export class CalendarService {
         users: {
           some: { userId },
         },
+        NOT: { ownerId: userId },
       },
     });
   }
 
   async create(data: Prisma.CalendarCreateInput, ownerId: number) {
-    return this.databaseService.calendar.create({
-      data: {
-        ...data,
-        owner: { connect: { id: ownerId } },
-      },
+    return this.databaseService.$transaction(async (tx) => {
+      const calendar = await tx.calendar.create({
+        data: {
+          ...data,
+          owner: { connect: { id: ownerId } },
+        },
+      });
+
+      await tx.calendarUser.create({
+        data: {
+          userId: ownerId,
+          calendarId: calendar.id,
+          role: UserRole.OWNER,
+        },
+      });
+
+      return calendar;
     });
   }
 
