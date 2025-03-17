@@ -20,10 +20,6 @@ export class CreateCalendarDto {
   @IsString()
   description?: string;
 
-  @ApiProperty({ required: false })
-  @IsOptional()
-  isMain?: boolean;
-
   @ApiProperty({ enum: Visibility })
   @IsEnum(Visibility)
   visibility: Visibility;

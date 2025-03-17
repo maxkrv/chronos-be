@@ -43,6 +43,7 @@ export class CalendarService {
   async findByOwnerId(userId: number) {
     return this.databaseService.calendar.findMany({
       where: { ownerId: userId },
+      orderBy: { createdAt: 'asc' },
     });
   }
 
@@ -77,6 +78,7 @@ export class CalendarService {
         },
         NOT: { ownerId: userId },
       },
+      orderBy: { createdAt: 'asc' },
     });
   }
 
