@@ -44,8 +44,8 @@ model Calendar {
     id          Int        @id @default(autoincrement())
     name        String     @db.VarChar(100)
     description String?    @db.Text
-    isMain      Boolean    @default(false) @map("is_main") // Defines if this is the main calendar
-    visibility  Visibility @default(PRIVATE) // Calendar visibility setting
+    isMain      Boolean?    @default(false) @map("is_main") // Defines if this is the main calendar
+    visibility  Visibility? @default(PRIVATE) // Calendar visibility setting
     createdAt   DateTime   @default(now()) @map("created_at")
     updatedAt   DateTime   @updatedAt @map("updated_at")
     ownerId     Int?       @map("owner_id") // Reference to the owner

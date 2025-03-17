@@ -12,6 +12,7 @@ import ResetPasswordLink from 'src/emails/reset-password';
 import { MailService } from 'src/shared/services/mail.service';
 
 import { ApiConfigService } from '../../config/api-config.service';
+import { CalendarService } from '../calendar/calendar.service';
 import { UserRepository } from '../user/user.repository';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
@@ -28,6 +29,7 @@ export class AuthService {
     private readonly userRepository: UserRepository,
     private readonly configService: ApiConfigService,
     private readonly mailService: MailService,
+    private readonly calendarService: CalendarService,
   ) {
     this.redis = this.redisService.getOrThrow();
   }
@@ -74,6 +76,14 @@ export class AuthService {
         name: dto.name,
       }),
     });
+
+    await this.calendarService.create(
+      {
+        name: `Main calendar`,
+        isMain: true,
+      },
+      user.id,
+    );
 
     return this.generateTokenPair({
       sub: user.id,
