@@ -35,6 +35,7 @@ model User {
     event               Event[]
     calendarUser        CalendarUser[]
     calendarInvitations CalendarInvitation[]
+    eventUser           EventUser[]
 
     @@map("user")
 }
@@ -60,11 +61,12 @@ model Calendar {
 model Event {
     id          Int           @id @default(autoincrement())
     name        String        @db.VarChar(100)
-    description String?       @db.Text
-    color       String        @default("#FFFFFF") // Default color for event representation
+    description String?       @db.VarChar(1000)
+    color       String        @default("#9bb0c1") // Default color for event representation
     startAt     DateTime      @map("start_at")
-    endAt       DateTime      @map("end_at")
+    endAt       DateTime?     @map("end_at")
     category    EventCategory // Category of the event (e.g., task, reminder)
+    link        String?       @db.VarChar(1000) // Optional link to the event
     createdAt   DateTime      @default(now()) @map("created_at")
     updatedAt   DateTime      @updatedAt @map("updated_at")
     calendarId  Int           @map("calendar_id") // Reference to the calendar
@@ -74,6 +76,8 @@ model Event {
     calendar    Calendar     @relation(fields: [calendarId], references: [id], onDelete: Cascade, onUpdate: Cascade)
     creator     User         @relation(fields: [creatorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
     invitations Invitation[]
+    eventRepeat EventRepeat?
+    users       EventUser[]
 
     @@map("event")
 }
@@ -83,6 +87,29 @@ enum EventCategory {
     ARRANGEMENT
     REMINDER
     TASK
+}
+
+model EventRepeat {
+    id         Int       @id @default(autoincrement())
+    eventId    Int       @unique() @map("event_id")
+    frequency  Frequency
+    interval   Int       @default(1)
+    repeatTime Int       @map("repeat_time")
+    createdAt  DateTime  @default(now()) @map("created_at")
+    updatedAt  DateTime  @updatedAt @map("updated_at")
+
+    event Event @relation(fields: [eventId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+    @@map("event_repeat")
+}
+
+enum Frequency {
+    MINUTELY
+    HOURLY
+    DAILY
+    WEEKLY
+    MONTHLY
+    YEARLY
 }
 
 model Invitation {
@@ -133,6 +160,20 @@ model CalendarUser {
     calendar Calendar @relation(fields: [calendarId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
     @@map("calendar_user")
+}
+
+model EventUser {
+    id         Int      @id @default(autoincrement())
+    userId     Int      @map("user_id") // Reference to the user
+    calendarId Int      @map("calendar_id")
+    eventId    Int      @map("event_id") // Reference to the event
+    role       UserRole @default(MEMBER) // User role in the event
+
+    // Relations
+    user  User  @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    event Event @relation(fields: [eventId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+    @@map("event_user")
 }
 
 // Defines different user roles in a calendar
