@@ -31,7 +31,7 @@ model User {
     updatedAt DateTime @updatedAt @map("updated_at")
 
     calendars           Calendar[]
-    invitations         Invitation[]
+    eventInvitations    EventInvitation[]
     event               Event[]
     calendarUser        CalendarUser[]
     calendarInvitations CalendarInvitation[]
@@ -41,14 +41,14 @@ model User {
 }
 
 model Calendar {
-    id          Int        @id @default(autoincrement())
-    name        String     @db.VarChar(100)
-    description String?    @db.Text
+    id          Int         @id @default(autoincrement())
+    name        String      @db.VarChar(100)
+    description String?     @db.Text
     isMain      Boolean?    @default(false) @map("is_main") // Defines if this is the main calendar
     visibility  Visibility? @default(PRIVATE) // Calendar visibility setting
-    createdAt   DateTime   @default(now()) @map("created_at")
-    updatedAt   DateTime   @updatedAt @map("updated_at")
-    ownerId     Int?       @map("owner_id") // Reference to the owner
+    createdAt   DateTime    @default(now()) @map("created_at")
+    updatedAt   DateTime    @updatedAt @map("updated_at")
+    ownerId     Int?        @map("owner_id") // Reference to the owner
 
     owner       User?                @relation(fields: [ownerId], references: [id], onDelete: SetNull, onUpdate: SetNull)
     events      Event[]
@@ -73,9 +73,9 @@ model Event {
     creatorId   Int           @map("creator_id") // Reference to the creator
 
     // Relations
-    calendar    Calendar     @relation(fields: [calendarId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-    creator     User         @relation(fields: [creatorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-    invitations Invitation[]
+    calendar    Calendar          @relation(fields: [calendarId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    creator     User              @relation(fields: [creatorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    invitations EventInvitation[]
     eventRepeat EventRepeat?
     users       EventUser[]
 
@@ -112,7 +112,7 @@ enum Frequency {
     YEARLY
 }
 
-model Invitation {
+model EventInvitation {
     id        Int              @id @default(autoincrement())
     eventId   Int              @map("event_id") // Reference to the event
     userId    Int              @map("user_id") // Reference to the invited user
@@ -124,7 +124,7 @@ model Invitation {
     event Event @relation(fields: [eventId], references: [id], onDelete: Cascade, onUpdate: Cascade)
     user  User  @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
-    @@map("invitation")
+    @@map("event_invitation")
 }
 
 model CalendarInvitation {

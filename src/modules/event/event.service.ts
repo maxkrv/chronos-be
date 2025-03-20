@@ -57,29 +57,46 @@ export class EventService {
 
     const allEvents = await this.databaseService.event.findMany({
       where: {
-        calendarId: query.calendarId ? query.calendarId : { in: calendarIds },
         OR: [
           {
-            startAt: {
-              gte: from,
-              lte: to,
-            },
-            eventRepeat: null,
-            category: { not: 'REMINDER' }, // Исключаем напоминания здесь
+            calendarId: query.calendarId
+              ? query.calendarId
+              : { in: calendarIds },
           },
           {
-            eventRepeat: {
-              isNot: null,
-            },
-          },
-          {
-            category: 'REMINDER', // Добавляем условие для напоминаний
-            startAt: {
-              gte: from,
-              lte: to,
+            users: {
+              some: {
+                calendarId: query.calendarId
+                  ? query.calendarId
+                  : { in: calendarIds },
+              },
             },
           },
         ],
+        AND: {
+          OR: [
+            {
+              startAt: {
+                gte: from,
+                lte: to,
+              },
+              eventRepeat: null,
+              category: { not: 'REMINDER' },
+            },
+            {
+              eventRepeat: {
+                isNot: null,
+              },
+            },
+            {
+              category: 'REMINDER',
+              startAt: {
+                gte: from,
+                lte: to,
+              },
+            },
+          ],
+        },
       },
       include: {
         users: {
