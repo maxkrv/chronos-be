@@ -87,6 +87,7 @@ enum EventCategory {
     ARRANGEMENT
     REMINDER
     TASK
+    OCCASION
 }
 
 model EventRepeat {

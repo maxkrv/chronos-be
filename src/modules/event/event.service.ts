@@ -81,18 +81,10 @@ export class EventService {
                 lte: to,
               },
               eventRepeat: null,
-              category: { not: 'REMINDER' },
             },
             {
               eventRepeat: {
                 isNot: null,
-              },
-            },
-            {
-              category: 'REMINDER',
-              startAt: {
-                gte: from,
-                lte: to,
               },
             },
           ],
@@ -167,14 +159,19 @@ export class EventService {
       );
     }
 
-    if (dto.category === EventCategory.REMINDER && dto.endAt !== undefined) {
+    if (
+      (dto.category === EventCategory.REMINDER ||
+        dto.category === EventCategory.OCCASION) &&
+      dto.endAt !== undefined
+    ) {
       throw new BadRequestException(
-        'endAt must be undefined for REMINDER category',
+        'endAt must be undefined for REMINDER and OCCASION categories',
       );
     }
 
     if (
       dto.category !== EventCategory.REMINDER &&
+      dto.category !== EventCategory.OCCASION &&
       (dto.endAt === undefined || dto.startAt === undefined)
     ) {
       throw new BadRequestException(
@@ -194,7 +191,11 @@ export class EventService {
         description: dto.description,
         color: dto.color,
         startAt: dto.startAt,
-        endAt: dto.category === EventCategory.REMINDER ? undefined : dto.endAt,
+        endAt:
+          dto.category === EventCategory.REMINDER ||
+          dto.category === EventCategory.OCCASION
+            ? undefined
+            : dto.endAt,
         category: dto.category,
         link: dto.link,
         calendarId: dto.calendarId,
@@ -239,14 +240,19 @@ export class EventService {
       );
     }
 
-    if (dto.category === EventCategory.REMINDER && dto.endAt !== undefined) {
+    if (
+      (dto.category === EventCategory.REMINDER ||
+        dto.category === EventCategory.OCCASION) &&
+      dto.endAt !== undefined
+    ) {
       throw new BadRequestException(
-        'endAt must be undefined for REMINDER category',
+        'endAt must be undefined for REMINDER and OCCASION categories',
       );
     }
 
     if (
       dto.category !== EventCategory.REMINDER &&
+      dto.category !== EventCategory.OCCASION &&
       (dto.endAt === undefined || dto.startAt === undefined)
     ) {
       throw new BadRequestException(
@@ -261,7 +267,10 @@ export class EventService {
     }
 
     const updatedEndAt =
-      dto.category === EventCategory.REMINDER ? null : dto.endAt;
+      dto.category === EventCategory.REMINDER ||
+      dto.category === EventCategory.OCCASION
+        ? null
+        : dto.endAt;
 
     const updatedEvent = await this.databaseService.event.update({
       where: { id: eventId },
@@ -286,17 +295,20 @@ export class EventService {
             repeatTime: this.calculateRepeatTime(dto.frequency, dto.interval),
           },
         });
-      } else {
-        await this.databaseService.eventRepeat.create({
-          data: {
-            eventId: updatedEvent.id,
-            frequency: dto.frequency,
-            interval: dto.interval,
-            repeatTime: this.calculateRepeatTime(dto.frequency, dto.interval),
-          },
-        });
+        return updatedEvent;
       }
-    } else if (!dto.frequency && !dto.interval && event.eventRepeat) {
+      await this.databaseService.eventRepeat.create({
+        data: {
+          eventId: updatedEvent.id,
+          frequency: dto.frequency,
+          interval: dto.interval,
+          repeatTime: this.calculateRepeatTime(dto.frequency, dto.interval),
+        },
+      });
+      return updatedEvent;
+    }
+
+    if (!dto.frequency && !dto.interval && event.eventRepeat) {
       await this.databaseService.eventRepeat.delete({
         where: { eventId: event.id },
       });
