@@ -1,64 +1,7 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { EventCategory, Frequency } from '@prisma/client';
-import { Type } from 'class-transformer';
-import {
-  IsDate,
-  IsEnum,
-  IsInt,
-  IsNotEmpty,
-  IsOptional,
-  IsString,
-  MaxLength,
-} from 'class-validator';
+import { OmitType, PartialType } from '@nestjs/swagger';
 
-export class UpdateEventDto {
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(100)
-  name: string;
+import { CreateEventDto } from './create-event.dto';
 
-  @ApiProperty({ required: false })
-  @IsOptional()
-  @IsString()
-  @MaxLength(1000)
-  description?: string;
-
-  @ApiProperty()
-  @IsOptional()
-  @IsString()
-  color?: string;
-
-  @ApiProperty()
-  @IsDate()
-  @IsNotEmpty()
-  @Type(() => Date)
-  startAt: Date;
-
-  @ApiProperty()
-  @IsDate()
-  @IsOptional()
-  @Type(() => Date)
-  endAt?: Date;
-
-  @ApiProperty()
-  @IsEnum(EventCategory)
-  @IsNotEmpty()
-  category: EventCategory;
-
-  @ApiProperty({ required: false })
-  @IsOptional()
-  @IsString()
-  @MaxLength(1000)
-  link?: string;
-
-  @ApiProperty({ required: false })
-  @IsOptional()
-  @IsEnum(Frequency)
-  frequency?: Frequency;
-
-  @ApiProperty({ required: false })
-  @IsOptional()
-  @IsInt()
-  interval?: number;
-}
+export class UpdateEventDto extends PartialType(
+  OmitType(CreateEventDto, ['calendarId'] as const),
+) {}
