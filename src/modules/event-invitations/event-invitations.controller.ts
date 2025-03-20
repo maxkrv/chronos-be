@@ -20,7 +20,7 @@ export class EventInvitationsController {
   }
 
   @ApiBearerAuth()
-  @Get('event/:eventId/invitations')
+  @Get('events/:eventId/invitations')
   async getEventInvitations(
     @Param('eventId') eventId: number,
     @GetCurrentUser() { sub }: JwtPayload,
