@@ -23,6 +23,7 @@ import { CalendarModule } from './modules/calendar/calendar.module';
 import { CalendarInvitationsModule } from './modules/calendar-invitations/calendar-invitations.module';
 import { CalendarUsersModule } from './modules/calendar-users/calendar-users.module';
 import { EventModule } from './modules/event/event.module';
+import { EventInvitationsModule } from './modules/event-invitations/event-invitations.module';
 import { GlobalExceptionFilter } from './shared/global-exception.filter';
 import { AccessTokenGuard } from './shared/guards/access-token.guard';
 import { LoggerModule } from './shared/logger/logger.module';
@@ -35,6 +36,7 @@ import { LoggerModule } from './shared/logger/logger.module';
     CalendarModule,
     EventModule,
     CalendarInvitationsModule,
+    EventInvitationsModule,
     CalendarUsersModule,
     DbModule,
     ScheduleModule.forRoot(),
