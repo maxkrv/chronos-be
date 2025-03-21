@@ -45,6 +45,7 @@ export interface IApp {
   env: Env;
   port: number;
   clientUrl: string;
+  nagerUrl: string;
   jwt: IJWT;
   throttle: {
     ttl: number;

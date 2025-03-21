@@ -26,6 +26,9 @@ export class AppVariables {
   @IsUrl({ require_tld: false })
   CLIENT_URL: string;
 
+  @IsUrl({ require_tld: false })
+  NAGER_DATE_API: string;
+
   @IsString()
   @IsNotEmpty()
   JWT_ACCESS_TOKEN_SECRET: string;
@@ -60,6 +63,7 @@ export const appConfig = registerAs<IApp>('app', () => {
     env: env.NODE_ENV as Env,
     port: +(env.PORT || 6969),
     clientUrl: env.CLIENT_URL || '',
+    nagerUrl: env.NAGER_DATE_API || '',
     jwt: {
       accessToken: {
         secret: env.JWT_ACCESS_TOKEN_SECRET || '',
