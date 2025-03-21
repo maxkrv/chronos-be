@@ -15,10 +15,12 @@ import { Paginated } from 'src/shared/pagination';
 import { Prefix } from 'src/utils/prefix.enum';
 
 import { JwtPayload } from '../auth/interface/jwt.interface';
-import { CalendarService } from './calendar.service';
+import { CountryCodeDto } from './dto/country-code.dto';
 import { CreateCalendarDto } from './dto/create-calendar.dto';
 import { GetPublicCalendarsDto } from './dto/get-public-calendars.dto';
 import { UpdateCalendarDto } from './dto/update-calendar.dto';
+import { YearDto } from './dto/year.dto';
+import { CalendarService } from './services/calendar.service';
 
 @Controller(Prefix.CALENDARS)
 export class CalendarController {
@@ -51,6 +53,16 @@ export class CalendarController {
     @GetCurrentUser() { sub }: JwtPayload,
   ) {
     return this.calendarService.findById(id, sub);
+  }
+
+  @ApiBearerAuth()
+  @Post('/holidays/:countryCode')
+  async addHolidaysToCalendar(
+    @Param() { countryCode }: CountryCodeDto,
+    @Query() { year }: YearDto,
+    @GetCurrentUser() { sub }: JwtPayload,
+  ) {
+    return this.calendarService.addHolidays(countryCode, year, sub);
   }
 
   @ApiBearerAuth()

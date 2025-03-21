@@ -12,7 +12,7 @@ import ResetPasswordLink from 'src/emails/reset-password';
 import { MailService } from 'src/shared/services/mail.service';
 
 import { ApiConfigService } from '../../config/api-config.service';
-import { CalendarService } from '../calendar/calendar.service';
+import { CalendarService } from '../calendar/services/calendar.service';
 import { UserRepository } from '../user/user.repository';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';

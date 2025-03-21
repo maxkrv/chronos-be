@@ -19,16 +19,16 @@ datasource db {
 }
 
 model User {
-    id        Int      @id @default(autoincrement())
-    name      String   @db.VarChar(100)
-    surname   String   @db.VarChar(100)
-    email     String   @unique @db.VarChar(100)
-    password  String   @db.VarChar(100)
-    avatarUrl String?  @map("avatar_url")
-    isActive  Boolean  @default(false) @map("is_active")
-    timezone  String?  @db.VarChar(50) // Optional timezone setting
-    createdAt DateTime @default(now()) @map("created_at")
-    updatedAt DateTime @updatedAt @map("updated_at")
+    id          Int      @id @default(autoincrement())
+    name        String   @db.VarChar(100)
+    surname     String   @db.VarChar(100)
+    email       String   @unique @db.VarChar(100)
+    password    String   @db.VarChar(100)
+    avatarUrl   String?  @map("avatar_url")
+    isActive    Boolean  @default(false) @map("is_active")
+    countryCode String?  @map("country_code") @db.VarChar(3)
+    createdAt   DateTime @default(now()) @map("created_at")
+    updatedAt   DateTime @updatedAt @map("updated_at")
 
     calendars           Calendar[]
     eventInvitations    EventInvitation[]
@@ -55,6 +55,7 @@ model Calendar {
     users       CalendarUser[]
     invitations CalendarInvitation[]
 
+    @@unique([ownerId, name])
     @@map("calendar")
 }
 

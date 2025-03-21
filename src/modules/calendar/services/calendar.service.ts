@@ -3,15 +3,66 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Calendar, Prisma, UserRole, Visibility } from '@prisma/client';
+import {
+  Calendar,
+  EventCategory,
+  Prisma,
+  UserRole,
+  Visibility,
+} from '@prisma/client';
 import { DatabaseService } from 'src/db/database.service';
 import { Paginated, Paginator } from 'src/shared/pagination';
 
-import { GetPublicCalendarsDto } from './dto/get-public-calendars.dto';
+import { GetPublicCalendarsDto } from '../dto/get-public-calendars.dto';
+import { NagerDateSDK } from './nager-date-sdk.service';
 
 @Injectable()
 export class CalendarService {
-  constructor(private readonly databaseService: DatabaseService) {}
+  constructor(
+    private readonly databaseService: DatabaseService,
+    private readonly nager: NagerDateSDK,
+  ) {}
+
+  async addHolidays(countryCode: string, year: number, userId: number) {
+    const holidays = await this.nager.getPublicHolidays(year, countryCode);
+
+    const holidayCalendar = await this.databaseService.calendar.upsert({
+      where: {
+        ownerId_name: { ownerId: userId, name: `${countryCode} Holidays` },
+      },
+      update: {},
+      create: {
+        name: `${countryCode} Holidays`,
+        visibility: Visibility.PRIVATE,
+        ownerId: userId,
+        users: {
+          create: {
+            userId,
+            role: UserRole.OWNER,
+          },
+        },
+      },
+    });
+
+    const data = holidays.map((holiday) => ({
+      name: holiday.name,
+      startAt: new Date(holiday.date),
+      category: EventCategory.OCCASION,
+      calendarId: holidayCalendar.id,
+      creatorId: userId,
+      color: '#4635b1',
+    }));
+
+    await this.databaseService.$transaction(async (tx) => {
+      await tx.event.deleteMany({
+        where: { calendarId: holidayCalendar.id },
+      });
+
+      await tx.event.createMany({
+        data,
+      });
+    });
+  }
 
   async findById(id: number, userId?: number) {
     const calendar = await this.databaseService.calendar.findUnique({
