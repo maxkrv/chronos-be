@@ -88,6 +88,19 @@ export class EventService {
               },
             },
           ],
+          ...(query.search
+            ? {
+                OR: [
+                  { name: { contains: query.search, mode: 'insensitive' } },
+                  {
+                    description: {
+                      contains: query.search,
+                      mode: 'insensitive',
+                    },
+                  },
+                ],
+              }
+            : {}),
         },
       },
       include: {

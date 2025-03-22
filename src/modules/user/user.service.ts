@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { FileUploadService } from 'src/shared/services/file-upload.service';
 
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -11,14 +12,14 @@ export class UserService {
     private readonly fileUploadService: FileUploadService,
   ) {}
 
-  private USER_SELECT = {
+  private USER_SELECT: Prisma.UserSelect = {
     id: true,
     name: true,
     surname: true,
     email: true,
     avatarUrl: true,
     isActive: true,
-    timezone: true,
+    countryCode: true,
   };
 
   async me(userId: number) {
