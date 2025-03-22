@@ -18,6 +18,7 @@ import { JwtPayload } from '../auth/interface/jwt.interface';
 import { CountryCodeDto } from './dto/country-code.dto';
 import { CreateCalendarDto } from './dto/create-calendar.dto';
 import { GetPublicCalendarsDto } from './dto/get-public-calendars.dto';
+import { SearchCalendarsDto } from './dto/search-calendars.dto';
 import { UpdateCalendarDto } from './dto/update-calendar.dto';
 import { YearDto } from './dto/year.dto';
 import { CalendarService } from './services/calendar.service';
@@ -36,14 +37,20 @@ export class CalendarController {
 
   @ApiBearerAuth()
   @Get('participating')
-  async getParticipatingCalendars(@GetCurrentUser() { sub }: JwtPayload) {
-    return this.calendarService.findParticipating(sub);
+  async getParticipatingCalendars(
+    @GetCurrentUser() { sub }: JwtPayload,
+    @Query() query: SearchCalendarsDto,
+  ) {
+    return this.calendarService.findParticipating(sub, query.search);
   }
 
   @ApiBearerAuth()
   @Get('my')
-  async getMyCalendars(@GetCurrentUser() { sub }: JwtPayload) {
-    return this.calendarService.findByOwnerId(sub);
+  async getMyCalendars(
+    @GetCurrentUser() { sub }: JwtPayload,
+    @Query() query: SearchCalendarsDto,
+  ) {
+    return this.calendarService.findByOwnerId(sub, query.search);
   }
 
   @ApiBearerAuth()
