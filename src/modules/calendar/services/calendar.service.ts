@@ -91,9 +91,19 @@ export class CalendarService {
     return calendar;
   }
 
-  async findByOwnerId(userId: number) {
+  async findByOwnerId(userId: number, search?: string) {
     return this.databaseService.calendar.findMany({
-      where: { ownerId: userId },
+      where: {
+        ownerId: userId,
+        AND: search
+          ? {
+              OR: [
+                { name: { contains: search, mode: 'insensitive' } },
+                { description: { contains: search, mode: 'insensitive' } },
+              ],
+            }
+          : {},
+      },
       orderBy: { createdAt: 'asc' },
     });
   }
@@ -121,13 +131,21 @@ export class CalendarService {
     return Paginator.paginate(data, count, opt);
   }
 
-  async findParticipating(userId: number) {
+  async findParticipating(userId: number, search?: string) {
     return this.databaseService.calendar.findMany({
       where: {
         users: {
           some: { userId },
         },
         NOT: { ownerId: userId },
+        AND: search
+          ? {
+              OR: [
+                { name: { contains: search, mode: 'insensitive' } },
+                { description: { contains: search, mode: 'insensitive' } },
+              ],
+            }
+          : {},
       },
       orderBy: { createdAt: 'asc' },
     });
