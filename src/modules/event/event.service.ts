@@ -35,10 +35,7 @@ export class EventService {
     const from = query.fromDate ? new Date(query.fromDate) : defaultFromDate;
     const to = query.toDate ? new Date(query.toDate) : defaultToDate;
 
-    const oneMonthLater = new Date(from);
-    oneMonthLater.setMonth(from.getMonth() + 1);
-
-    if (to > oneMonthLater) {
+    if (to > dayjs(from).add(31, 'day').toDate()) {
       throw new BadRequestException('Date range must be within one month');
     }
 
