@@ -31,7 +31,16 @@ export class CalendarUsersService {
 
     return this.databaseService.calendarUser.findMany({
       where: { calendarId },
-      include: { user: true },
+      include: {
+        user: {
+          select: {
+            name: true,
+            surname: true,
+            email: true,
+            avatarUrl: true,
+          },
+        },
+      },
     });
   }
 
