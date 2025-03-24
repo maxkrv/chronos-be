@@ -148,6 +148,14 @@ export class CalendarService {
           : {},
       },
       orderBy: { createdAt: 'asc' },
+      include: {
+        users: {
+          where: { userId },
+          select: {
+            role: true,
+          },
+        },
+      },
     });
   }
 
