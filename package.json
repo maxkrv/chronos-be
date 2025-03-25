@@ -6,7 +6,7 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "dev": "npm run start:docker && npm run migrate:dev && npm run generate && npm run start:dev",
+    "dev": "npm run start:docker && npm run migrate:dev && npm run start:dev",
     "start:docker": "docker compose up -d",
     "start:dev": "nest start --watch",
     "migrate:dev": "npx prisma migrate dev",

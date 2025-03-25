@@ -12,9 +12,7 @@ import { CreateEventDto } from './dto/create-event.dto';
 import { GetEventsDto } from './dto/get-events.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 
-const MILLISECOND = 1;
-const SECOND = 1000 * MILLISECOND;
-const MINUTE = 60 * SECOND;
+const MINUTE = 1;
 const HOUR = 60 * MINUTE;
 const DAY = 24 * HOUR;
 const WEEK = 7 * DAY;
@@ -35,7 +33,7 @@ export class EventService {
     const from = query.fromDate ? new Date(query.fromDate) : defaultFromDate;
     const to = query.toDate ? new Date(query.toDate) : defaultToDate;
 
-    if (to > dayjs(from).add(31, 'day').toDate()) {
+    if (dayjs(to).diff(dayjs(from), 'day') > 31) {
       throw new BadRequestException('Date range must be within one month');
     }
 
@@ -74,6 +72,13 @@ export class EventService {
           OR: [
             {
               startAt: {
+                gte: from,
+                lte: to,
+              },
+              eventRepeat: null,
+            },
+            {
+              endAt: {
                 gte: from,
                 lte: to,
               },
@@ -141,6 +146,14 @@ export class EventService {
   }
 
   async create(dto: CreateEventDto, userId: number) {
+    if (
+      dto.startAt &&
+      dto.endAt &&
+      dayjs(dto.startAt).isAfter(dayjs(dto.endAt))
+    ) {
+      throw new BadRequestException('startAt must be before endAt');
+    }
+
     const calendar = await this.databaseService.calendar.findUnique({
       where: { id: dto.calendarId },
       include: {
