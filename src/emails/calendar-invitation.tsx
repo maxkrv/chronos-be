@@ -48,7 +48,7 @@ const CalendarInvitation: React.FC<EmailProps> = ({
         </Section>
         <Hr style={hr} />
         <Text style={paragraph}>
-          Best regards, <br /> The Usof Team
+          Best regards, <br /> The Chronos Team
         </Text>
       </Container>
     </Body>

@@ -35,7 +35,7 @@ const ResetPasswordLink: React.FC<EmailProps> = ({ link, name }) => (
         <Text style={paragraph}>
           Best,
           <br />
-          The Usof team
+          The Chronos team
         </Text>
       </Container>
     </Body>

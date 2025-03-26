@@ -8,19 +8,19 @@
     <em>Calendar application Nest API</em>
 </p>
 <p align="center">
-	<img src="https://img.shields.io/github/license/maxkrv/chronos-be?style=flat&color=0080ff" alt="license">
-	<img src="https://img.shields.io/github/last-commit/maxkrv/chronos-be?style=flat&logo=git&logoColor=white&color=0080ff" alt="last-commit">
-	<img src="https://img.shields.io/github/languages/top/maxkrv/chronos-be?style=flat&color=0080ff" alt="repo-top-language">
-	<img src="https://img.shields.io/github/languages/count/maxkrv/chronos-be?style=flat&color=0080ff" alt="repo-language-count">
+ <img src="https://img.shields.io/github/license/maxkrv/chronos-be?style=flat&color=0080ff" alt="license">
+ <img src="https://img.shields.io/github/last-commit/maxkrv/chronos-be?style=flat&logo=git&logoColor=white&color=0080ff" alt="last-commit">
+ <img src="https://img.shields.io/github/languages/top/maxkrv/chronos-be?style=flat&color=0080ff" alt="repo-top-language">
+ <img src="https://img.shields.io/github/languages/count/maxkrv/chronos-be?style=flat&color=0080ff" alt="repo-language-count">
 <p>
 <p align="center">
-		<em>Developed with the software and tools below.</em>
+  <em>Developed with the software and tools below.</em>
 </p>
 <p align="center">
-	<img src="https://img.shields.io/badge/ESLint-4B32C3.svg?style=flat&logo=ESLint&logoColor=white" alt="ESLint">
-	<img src="https://img.shields.io/badge/TypeScript-3178C6.svg?style=flat&logo=TypeScript&logoColor=white" alt="TypeScript">
-	<img src="https://img.shields.io/badge/Prisma-2D3748.svg?style=flat&logo=Prisma&logoColor=white" alt="Prisma">
-	<img src="https://img.shields.io/badge/Docker-2496ED.svg?style=flat&logo=Docker&logoColor=white" alt="Docker">
+ <img src="https://img.shields.io/badge/ESLint-4B32C3.svg?style=flat&logo=ESLint&logoColor=white" alt="ESLint">
+ <img src="https://img.shields.io/badge/TypeScript-3178C6.svg?style=flat&logo=TypeScript&logoColor=white" alt="TypeScript">
+ <img src="https://img.shields.io/badge/Prisma-2D3748.svg?style=flat&logo=Prisma&logoColor=white" alt="Prisma">
+ <img src="https://img.shields.io/badge/Docker-2496ED.svg?style=flat&logo=Docker&logoColor=white" alt="Docker">
     <img src="https://img.shields.io/badge/Node.js-339933.svg?style=flat&logo=Node.js&logoColor=white" alt="Node.js">
     <img src="https://img.shields.io/badge/Zod-000000.svg?style=flat&logo=Zod&logoColor=white" alt="Zod">
     <img src="https://img.shields.io/badge/Prettier-F7B93E.svg?style=flat&logo=Prettier&logoColor=white" alt="Prettier">
@@ -43,7 +43,7 @@
 > - [🗄️ Database Schema](#️-database-schema)
 > - [💻 Getting Started](#-getting-started)
 >     - [⚙️ Installation](#️-installation)
->     - [🕜 Running Chronos](#-running-USOF)
+>     - [🕜 Running Chronos](#-running-chronos)
 > - [📜 Swagger Documentation](#-swagger-documentation)
 > - [🤝 Contributing](#-contributing)
 > - [📄 License](#-license)
@@ -143,22 +143,30 @@ Contributions are welcome! Here are several ways you can contribute:
 
 1. **Fork the Repository**: Start by forking the project repository to your GitHub account.
 2. **Clone Locally**: Clone the forked repository to your local machine using a Git client.
+
     ```sh
     git clone https://github.com/maxkrv/chronos-be
     ```
+
 3. **Create a New Branch**: Always work on a new branch, giving it a descriptive name.
+
     ```sh
     git checkout -b new-feature-x
     ```
+
 4. **Make Your Changes**: Develop and test your changes locally.
 5. **Commit Your Changes**: Commit with a clear message describing your updates.
+
     ```sh
     git commit -m 'Implemented new feature x.'
     ```
+
 6. **Push to GitHub**: Push the changes to your forked repository.
+
     ```sh
     git push origin new-feature-x
     ```
+
 7. **Submit a Pull Request**: Create a PR against the original project repository. Clearly describe the changes and their motivations.
 
 Once your PR is reviewed and approved, it will be merged into the main branch.
