@@ -36,6 +36,15 @@ export class CalendarController {
   }
 
   @ApiBearerAuth()
+  @Post('public/:calendarId/participate')
+  async participateInPublicCalendar(
+    @Param('calendarId') id: number,
+    @GetCurrentUser() { sub }: JwtPayload,
+  ) {
+    return this.calendarService.participateInPublicCalendar(id, sub);
+  }
+
+  @ApiBearerAuth()
   @Get('participating')
   async getParticipatingCalendars(
     @GetCurrentUser() { sub }: JwtPayload,

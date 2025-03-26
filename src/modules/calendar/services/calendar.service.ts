@@ -131,6 +131,32 @@ export class CalendarService {
     return Paginator.paginate(data, count, opt);
   }
 
+  async participateInPublicCalendar(calendarId: number, userId: number) {
+    const calendar = await this.databaseService.calendar.findUnique({
+      where: { id: calendarId },
+    });
+    if (!calendar) throw new NotFoundException('Calendar not found');
+
+    if (calendar.visibility !== Visibility.PUBLIC) {
+      throw new ForbiddenException('Calendar is not public');
+    }
+
+    const isUserParticipant = await this.databaseService.calendarUser.count({
+      where: { calendarId, userId },
+    });
+    if (isUserParticipant) {
+      throw new ForbiddenException('User is already a participant');
+    }
+
+    return this.databaseService.calendarUser.create({
+      data: {
+        userId,
+        calendarId,
+        role: UserRole.MEMBER,
+      },
+    });
+  }
+
   async findParticipating(userId: number, search?: string) {
     return this.databaseService.calendar.findMany({
       where: {
