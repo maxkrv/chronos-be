@@ -305,6 +305,7 @@ export class EventService {
         endAt: updatedEndAt,
         category: dto.category,
         link: dto.link,
+        calendarId: dto.calendarId,
       },
     });
 
