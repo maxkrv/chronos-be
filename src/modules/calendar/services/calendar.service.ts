@@ -55,7 +55,10 @@ export class CalendarService {
 
     await this.databaseService.$transaction(async (tx) => {
       await tx.event.deleteMany({
-        where: { calendarId: holidayCalendar.id },
+        where: {
+          calendarId: holidayCalendar.id,
+          startAt: { gte: new Date(year, 0, 1), lte: new Date(year, 11, 31) },
+        },
       });
 
       await tx.event.createMany({
