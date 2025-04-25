@@ -1,0 +1,193 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+generator dbml {
+    provider = "prisma-dbml-generator"
+    output   = "./generated/dbml"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model User {
+    id          Int      @id @default(autoincrement())
+    name        String   @db.VarChar(100)
+    surname     String   @db.VarChar(100)
+    email       String   @unique @db.VarChar(100)
+    password    String   @db.VarChar(100)
+    avatarUrl   String?  @map("avatar_url")
+    isActive    Boolean  @default(false) @map("is_active")
+    countryCode String?  @map("country_code") @db.VarChar(3)
+    createdAt   DateTime @default(now()) @map("created_at")
+    updatedAt   DateTime @updatedAt @map("updated_at")
+
+    calendars           Calendar[]
+    eventInvitations    EventInvitation[]
+    event               Event[]
+    calendarUser        CalendarUser[]
+    calendarInvitations CalendarInvitation[]
+    eventUser           EventUser[]
+
+    @@map("user")
+}
+
+model Calendar {
+    id          Int         @id @default(autoincrement())
+    name        String      @db.VarChar(100)
+    description String?     @db.Text
+    isMain      Boolean?    @default(false) @map("is_main") // Defines if this is the main calendar
+    visibility  Visibility? @default(PRIVATE) // Calendar visibility setting
+    createdAt   DateTime    @default(now()) @map("created_at")
+    updatedAt   DateTime    @updatedAt @map("updated_at")
+    ownerId     Int?        @map("owner_id") // Reference to the owner
+
+    owner       User?                @relation(fields: [ownerId], references: [id], onDelete: SetNull, onUpdate: SetNull)
+    events      Event[]
+    users       CalendarUser[]
+    invitations CalendarInvitation[]
+
+    @@unique([ownerId, name])
+    @@map("calendar")
+}
+
+model Event {
+    id          Int           @id @default(autoincrement())
+    name        String        @db.VarChar(100)
+    description String?       @db.VarChar(1000)
+    color       String        @default("#9bb0c1") // Default color for event representation
+    startAt     DateTime      @map("start_at")
+    endAt       DateTime?     @map("end_at")
+    category    EventCategory // Category of the event (e.g., task, reminder)
+    link        String?       @db.VarChar(1000) // Optional link to the event
+    createdAt   DateTime      @default(now()) @map("created_at")
+    updatedAt   DateTime      @updatedAt @map("updated_at")
+    calendarId  Int           @map("calendar_id") // Reference to the calendar
+    creatorId   Int           @map("creator_id") // Reference to the creator
+
+    // Relations
+    calendar    Calendar          @relation(fields: [calendarId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    creator     User              @relation(fields: [creatorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    invitations EventInvitation[]
+    eventRepeat EventRepeat?
+    users       EventUser[]
+
+    @@map("event")
+}
+
+// Defines different types of event categories
+enum EventCategory {
+    ARRANGEMENT
+    REMINDER
+    TASK
+    OCCASION
+}
+
+model EventRepeat {
+    id         Int       @id @default(autoincrement())
+    eventId    Int       @unique() @map("event_id")
+    frequency  Frequency
+    interval   Int       @default(1)
+    repeatTime Int       @map("repeat_time")
+    createdAt  DateTime  @default(now()) @map("created_at")
+    updatedAt  DateTime  @updatedAt @map("updated_at")
+
+    event Event @relation(fields: [eventId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+    @@map("event_repeat")
+}
+
+enum Frequency {
+    MINUTELY
+    HOURLY
+    DAILY
+    WEEKLY
+    MONTHLY
+    YEARLY
+}
+
+model EventInvitation {
+    id        Int              @id @default(autoincrement())
+    eventId   Int              @map("event_id") // Reference to the event
+    userId    Int              @map("user_id") // Reference to the invited user
+    status    InvitationStatus @default(PENDING) // Invitation status (pending, accepted, declined)
+    createdAt DateTime         @default(now()) @map("created_at")
+    updatedAt DateTime         @updatedAt @map("updated_at")
+
+    // Relations
+    event Event @relation(fields: [eventId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    user  User  @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+    @@map("event_invitation")
+}
+
+model CalendarInvitation {
+    id         Int              @id @default(autoincrement())
+    calendarId Int              @map("calendar_id") // Reference to the calendar
+    userId     Int              @map("user_id") // Reference to the invited user
+    status     InvitationStatus @default(PENDING) // Invitation status (pending, accepted, declined)
+    createdAt  DateTime         @default(now()) @map("created_at")
+    updatedAt  DateTime         @updatedAt @map("updated_at")
+
+    // Relations
+    calendar Calendar @relation(fields: [calendarId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    user     User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+    @@map("calendar_invitation")
+}
+
+// Statuses for event and calendar invitations
+enum InvitationStatus {
+    PENDING
+    ACCEPTED
+    DECLINED
+}
+
+model CalendarUser {
+    id         Int      @id @default(autoincrement())
+    userId     Int      @map("user_id") // Reference to the user
+    calendarId Int      @map("calendar_id") // Reference to the calendar
+    role       UserRole @default(MEMBER) // User role in the calendar
+
+    // Relations
+    user     User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    calendar Calendar @relation(fields: [calendarId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+    @@map("calendar_user")
+}
+
+model EventUser {
+    id         Int      @id @default(autoincrement())
+    userId     Int      @map("user_id") // Reference to the user
+    calendarId Int      @map("calendar_id")
+    eventId    Int      @map("event_id") // Reference to the event
+    role       UserRole @default(MEMBER) // User role in the event
+
+    // Relations
+    user  User  @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    event Event @relation(fields: [eventId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+    @@map("event_user")
+}
+
+// Defines different user roles in a calendar
+enum UserRole {
+    OWNER
+    ADMIN
+    MEMBER
+}
+
+// Defines different visibility levels for calendars
+enum Visibility {
+    PRIVATE
+    SHARED
+    PUBLIC
+}
